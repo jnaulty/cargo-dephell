@@ -4,8 +4,18 @@ use serde::Deserialize;
 use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
+use std::{thread, time};
 
 use crate::analysis::PackageRisk;
+
+// Util Function
+//
+//
+
+fn sleep(duration: u64) {
+    let time = time::Duration::from_millis(duration);
+    thread::sleep(time);
+}
 
 //
 // Analysis Functions
@@ -29,7 +39,9 @@ pub fn get_github_stars(
         "https://api.github.com/repos/{}",
         repo.trim_end_matches(".git")
     );
-    let mut request = http_client.get(&request_url);
+    let mut request = http_client
+        .get(&request_url)
+        .header("User-Agent", "dephell_bot (jnaulty@gmail.com)");
 
     // use the github token
     let (username, token) = github_token;
@@ -45,9 +57,14 @@ pub fn get_github_stars(
     };
 
     if !resp.status().is_success() {
-        eprintln!("dephell: github request failed");
+        eprintln!("dephell: get_github_stars failed");
         eprintln!("status: {}", resp.status());
         eprintln!("text: {:?}", resp.text());
+        eprintln!("request: {}", request_url);
+        eprintln!("");
+        let now = time::Instant::now();
+        sleep(2000);
+        assert!(now.elapsed() >= time::Duration::from_millis(2000));
         return None;
     }
     let resp: reqwest::Result<GithubResponse> = resp.json();
@@ -88,7 +105,9 @@ pub fn get_active_maintainers(
         repo.trim_end_matches(".git"),
         six_months_ago,
     );
-    let mut request = http_client.get(&request_url);
+    let mut request = http_client
+        .get(&request_url)
+        .header("User-Agent", "dephell_bot (jnaulty@gmail.com)");
 
     // use the github token
     let (username, token) = github_token;
@@ -107,6 +126,11 @@ pub fn get_active_maintainers(
         eprintln!("dephell: crates.io request failed");
         eprintln!("status: {}", resp.status());
         eprintln!("text: {:?}", resp.text());
+        eprintln!("request: {}", request_url);
+        eprintln!("");
+        let now = time::Instant::now();
+        sleep(2000);
+        assert!(now.elapsed() >= time::Duration::from_millis(2000));
         return None;
     }
     let resp: reqwest::Result<Vec<CommitInfo>> = resp.json();
@@ -143,7 +167,9 @@ pub fn get_crates_io_dependent(
         "https://crates.io/api/v1/crates/{}/reverse_dependencies",
         crate_name,
     );
-    let request = http_client.get(&request_url);
+    let request = http_client
+        .get(&request_url)
+        .header("User-Agent", "dephell_bot (jnaulty@gmail.com)");
     // send the request
     let resp = match request.send() {
         Err(err) => {
@@ -158,6 +184,11 @@ pub fn get_crates_io_dependent(
         eprintln!("query: {}", request_url);
         eprintln!("status: {}", resp.status());
         eprintln!("text: {:?}", resp.text());
+        eprintln!("request: {}", request_url);
+        eprintln!("");
+        let now = time::Instant::now();
+        sleep(2000);
+        assert!(now.elapsed() >= time::Duration::from_millis(2000));
         return None;
     }
     let resp: reqwest::Result<Response> = resp.json();
@@ -186,7 +217,9 @@ pub fn get_crates_io_last_updated(
     }
     // create request to crates.io API
     let request_url = format!("https://crates.io/api/v1/crates/{}", crate_name,);
-    let request = http_client.get(&request_url);
+    let request = http_client
+        .get(&request_url)
+        .header("User-Agent", "dephell_bot (jnaulty@gmail.com)");
     // send the request
     let resp = match request.send() {
         Err(err) => {
@@ -197,9 +230,14 @@ pub fn get_crates_io_last_updated(
     };
     // parse response
     if !resp.status().is_success() {
-        eprintln!("dephell: crates.io request failed");
+        eprintln!("dephell: get_crates_io_last_updated failed");
         eprintln!("status: {}", resp.status());
         eprintln!("text: {:?}", resp.text());
+        eprintln!("request: {}", request_url);
+        eprintln!("");
+        let now = time::Instant::now();
+        sleep(2000);
+        assert!(now.elapsed() >= time::Duration::from_millis(2000));
         return None;
     }
     let resp: reqwest::Result<Response> = resp.json();

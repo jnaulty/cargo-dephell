@@ -155,6 +155,7 @@ fn main() {
     let packages: Option<Vec<&str>> = packages.map(|x| x.collect());
 
     // do the analysis
+    eprintln!("Starting analysis of repo");
     let result = analysis::analyze_repo(
         &manifest_path,
         http_client,
